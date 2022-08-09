@@ -2,35 +2,17 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
+const helper = require('./test_helper')
 const Blog = require('../models/blog')
 
+beforeEach(async () => {
+  await Blog.deleteMany({})
 
-const initialBlogs = [
-    {
-      _id: '5a422aa71b54a676234d17f8',
-      title: 'Go To Statement Considered Harmful',
-      author: 'Edsger W. Dijkstra',
-      url: 'http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html',
-      likes: 5,
-      __v: 0
-    },
-    {
-      _id: 'somethingidk',
-      title: 'Oh look, a bird!',
-      author: 'My dog, Felo',
-      url: 'Wedonthavethemoneyforthat.com',
-      likes: 50,
-      __v: 0
-    }
-  ]
-
-  beforeEach(async () => {
-    await Blog.deleteMany({})
-    let blogObject = new Blog(initialBlogs[0])
-    await blogObject.save()
-    blogObject = new Blog(initialBlogs[1])
-    await blogObject.save()
-  })
+  const blogObjects = helper.initialBlogs
+    .map(blog => new Blog(blog))
+  const promiseArray = blogObjects.map(blog => blog.save())
+  await Promise.all(promiseArray)
+})
   
 
 test('blogs are returned as json', async () => {
@@ -45,16 +27,88 @@ test('blogs are returned as json', async () => {
   test('all blogs are returned', async () => {
     const response = await api.get('/api/blogs')
   
-    expect(response.body).toHaveLength(initialBlogs.length)
+    expect(response.body).toHaveLength(helper.initialBlogs.length)
   })
   
   test('a specific blog is within the returned blogs', async () => {
     const response = await api.get('/api/blogs')
   
-    const contents = response.body.map(r => r.content)
+    const contents = response.body.map(r => r.title)
     expect(contents).toContain(
-      'Browser can execute only Javascript'
+      'Oh look, a bird!'
     )
+  })
+  test('a valid blog can be added', async () => {
+    const newBlog = {
+      title: 'How to kill your ex',
+      author: 'John T Roosevelt',
+      url: 'voggov.com',
+      likes: 5000,
+    }
+  
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+  
+    const response = await helper.blogsInDb()
+  
+    const contents = response.map(r => r.title)
+  
+    expect(response).toHaveLength(helper.initialBlogs.length + 1)
+    expect(contents).toContain(
+      'How to kill your ex'
+    )
+  })
+
+  test('blog without title is not added', async () => {
+    const newBlog = {
+      author: 'John hopkins'
+    }
+  
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  
+    const response = await helper.blogsInDb()
+  
+    expect(response).toHaveLength(helper.initialBlogs.length)
+  }, 100000)
+
+  test('a specific blog can be viewed', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+  
+    const blogToView = blogsAtStart[0]
+  
+    const resultBlog = await api
+      .get(`/api/blogs/${blogToView._id}`)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+  
+    const processedBlogToView = JSON.parse(JSON.stringify(blogToView))
+  
+    expect(resultBlog.body).toEqual(processedBlogToView)
+  })
+  
+  test('a blog can be deleted', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+  
+    await api
+      .delete(`/api/blogs/${blogToDelete._id}`)
+      .expect(204)
+  
+    const blogsAtEnd = await helper.blogsInDb()
+  
+    expect(blogsAtEnd).toHaveLength(
+      helper.initialBlogs.length - 1
+    )
+  
+    const contents = blogsAtEnd.map(r => r.title)
+  
+    expect(contents).not.toContain(blogToDelete.title)
   })
 
 afterAll(() => {
