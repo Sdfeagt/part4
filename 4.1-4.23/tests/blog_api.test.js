@@ -54,19 +54,20 @@ test('blogs are returned as json', async () => {
     )
   })
 
-  test('blog without title is not added', async () => {
+  test('blikes default to 0 if they are not defined', async () => {
     const newBlog = {
-      author: 'John hopkins'
+      title: 'How to kill your ex',
+      author: 'John T Roosevelt',
+      url: 'voggov.com'
     }
-  
     await api
       .post('/api/blogs')
       .send(newBlog)
-      .expect(400)
+      .expect(201)
   
     const response = await helper.blogsInDb()
-  
-    expect(response).toHaveLength(helper.initialBlogs.length)
+    const lookedfor = response[response.length-1]
+    expect(lookedfor.likes).toBe(0)
   })
 
   test('a specific blog can be viewed using id', async () => {
