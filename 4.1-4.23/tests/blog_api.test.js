@@ -85,6 +85,39 @@ test('blogs are returned as json', async () => {
   
     expect(resultBlog.body).toEqual(processedBlogToView)
   },)
+
+  
+  test('Blog without url will not be added', async () => {
+    //Validation error occurs before data is sent, therefore Bad Request cannot be achieved
+    const BlognotURL = {
+      title: 'How to kill your ex',
+      author: 'John T Roosevelt',
+    }
+
+    expect(t).toThrow(ValidationError)
+  
+    
+    await api
+    .post('/api/blogs')
+    .send(BlognotURL)
+    .expect(400)
+
+  })
+
+  test('Blog without title will not be added', async () => {
+        //Validation error occurs before data is sent, therefore Bad Request cannot be achieved
+
+    const newBlog = {
+      author: 'John T Roosevelt',
+      url: 'lonelyisland.io',
+    }
+
+    await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+
+  })
   
   test('a blog can be deleted', async () => {
     const blogsAtStart = await helper.blogsInDb()
