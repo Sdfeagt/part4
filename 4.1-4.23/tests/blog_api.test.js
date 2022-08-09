@@ -72,7 +72,6 @@ test('blogs are returned as json', async () => {
 
   test('a specific blog can be viewed using id', async () => {
     const blogsAtStart = await helper.blogsInDb()
-    console.log(blogsAtStart);
   
     const blogToView = blogsAtStart[0]
   
@@ -92,10 +91,7 @@ test('blogs are returned as json', async () => {
     const BlognotURL = {
       title: 'How to kill your ex',
       author: 'John T Roosevelt',
-    }
-
-    expect(t).toThrow(ValidationError)
-  
+    }  
     
     await api
     .post('/api/blogs')
@@ -136,6 +132,27 @@ test('blogs are returned as json', async () => {
     const contents = blogsAtEnd.map(r => r.title)
   
     expect(contents).not.toContain(blogToDelete.title)
+  })
+
+  test('increment likes by 1', async () => {
+    const blogs = await helper.blogsInDb()
+    const Blog = blogs[0]
+    const updatedBlog = {
+      title: Blog.title,
+      author: Blog.author,
+      url: Blog.url,
+      likes: Blog.likes
+    }
+    await
+     api.put(`/api/blogs/${Blog.id}`)
+     .send(updatedBlog)
+     .expect(200)
+
+    const update = await helper.blogsInDb()
+    const BlogUpdated = update[0]
+    console.log(BlogUpdated);
+
+    expect(BlogUpdated.likes).toBe(Blog.likes + 1)
   })
 
 afterAll(() => {
