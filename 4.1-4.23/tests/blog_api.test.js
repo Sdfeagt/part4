@@ -126,7 +126,7 @@ test('blogs are returned as json', async () => {
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
       .expect(204)
-  
+   
     const blogsAtEnd = await helper.blogsInDb()
   
     expect(blogsAtEnd).toHaveLength(
