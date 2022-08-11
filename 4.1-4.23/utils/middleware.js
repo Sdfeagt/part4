@@ -43,9 +43,23 @@ const tokenExtractor = (request, response, next) => {
   next()
 }
 
+userExtractor = (request, response, next) => {
+  const authorization = request.get('authorization')
+  const bearer = 'bearer '
+
+  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
+    request.user =  decodedToken.username
+  }
+  next()
+
+
+}
+
 module.exports = {
   requestLogger,
   unknownEndpoint,
   errorHandler,
-  tokenExtractor
+  tokenExtractor,
+  userExtractor
 }
