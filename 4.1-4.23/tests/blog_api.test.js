@@ -5,6 +5,9 @@ const api = supertest(app)
 const helper = require('./test_helper')
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const bcrypt = require('bcrypt')
+const { error } = require('../utils/logger')
+
 
 beforeEach(async () => {
   await Blog.deleteMany({})
@@ -15,6 +18,14 @@ beforeEach(async () => {
     .map(blog => new Blog(blog))
   const promiseArray = blogObjects.map(blog => blog.save())
   await Promise.all(promiseArray)
+
+  await User.deleteMany({})
+  const master = new User({
+    username: "root123",
+    passwordHash: await bcrypt.hash('toor', 10)
+  })
+  console.log(master.passwordHash);
+  await master.save()
 })
   
 
@@ -40,9 +51,11 @@ test('blogs are returned as json', async () => {
       url: 'voggov.com',
       likes: 5000,
     }
-  
+    const userresponse = await api.post('/api/login').send({username: "root123", password: "toor"})
+    console.log(userresponse.body.token)
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${userresponse.body.token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -57,14 +70,17 @@ test('blogs are returned as json', async () => {
     )
   })
 
-  test('blikes default to 0 if they are not defined', async () => {
+  test('likes default to 0 if they are not defined', async () => {
     const newBlog = {
       title: 'How to kill your ex',
       author: 'John T Roosevelt',
       url: 'voggov.com'
     }
+    const user = await api.post('/api/login').send({ username: 'root123', password: 'toor' })
+
     await api
       .post('/api/blogs')
+      .set('Authorization', `bearer ${user.body.token}`)
       .send(newBlog)
       .expect(201)
   
@@ -121,7 +137,7 @@ test('blogs are returned as json', async () => {
   test('a blog can be deleted', async () => {
     const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
-  
+
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
       .expect(204)
@@ -153,7 +169,6 @@ test('blogs are returned as json', async () => {
 
     const update = await helper.blogsInDb()
     const BlogUpdated = update[0]
-    console.log(BlogUpdated);
 
     expect(BlogUpdated.likes).toBe(Blog.likes + 1)
   })

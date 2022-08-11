@@ -1,6 +1,5 @@
 DELETE     http://localhost:3003/api/blogs/62f551153354703459aede3a HTTP/1.1
 content-type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QxMjMiLCJpZCI6IjYyZjUwNGI1MDdjNThiZDQ5MTY2Yjg4MiIsImlhdCI6MTY2MDIyNDczOH0.1BJ_o8Li0oLr9-32ZkWMhpgbh5RBr0v7VlDp5lklTZI
 
 {
       "username": "roosdadat123",
