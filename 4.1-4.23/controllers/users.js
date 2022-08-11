@@ -11,8 +11,19 @@ usersRouter.post('/', async (request, response) => {
       error: 'username must be unique'
     })
   }
+  if (password === undefined){
+    return response.status(400).json({ error: 'Password is required!' })
+  }
 
   if (password.length < 3 ) {
+    return response.status(400).json({ error: 'password too short' })
+  }
+
+  if (username === undefined){
+    return response.status(400).json({ error: 'Username is required!' })
+  }
+
+  if (username.length < 3 ) {
     return response.status(400).json({ error: 'password too short' })
   }
 
