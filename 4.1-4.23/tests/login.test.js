@@ -109,7 +109,7 @@ test('User with too short username wont be added', async () =>{
         await api
           .post('/api/users')
           .send(newUser)
-          .expect(400)
+          .expect(400) 
           .expect('Content-Type', /application\/json/)
     
         const response = await helper.usersInDb()
