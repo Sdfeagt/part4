@@ -55,7 +55,7 @@ test('blogs are returned as json', async () => {
     console.log(userresponse.body.token)
     await api
       .post('/api/blogs')
-      .set('Authorization', `bearer ${userresponse.body.token}`)
+      .set({Authorization: `bearer ${userresponse.body.token}`})
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)
@@ -137,9 +137,11 @@ test('blogs are returned as json', async () => {
   test('a blog can be deleted', async () => {
     const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
+    const userresponse = await api.post('/api/login').send({username: "root123", password: "toor"})
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set({Authorization: `bearer ${userresponse.body.token}`})
       .expect(204)
    
     const blogsAtEnd = await helper.blogsInDb()
