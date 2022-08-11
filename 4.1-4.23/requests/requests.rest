@@ -1,1 +1,10 @@
-POST  http://localhost:3003/api/blogs
+POST  http://localhost:3003/api/blogs HTTP/1.1
+content-type: application/json
+
+{
+      "title": "How I met your dog",
+      "author": "Meeee",
+      "url": "livetest.com",
+      "likes": 5,
+      "userId": "62f3d163b882bddf732d56d0"
+}
