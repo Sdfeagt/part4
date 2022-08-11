@@ -106,7 +106,7 @@ test('User with too short username wont be added', async () =>{
           password: 's',
         }
     
-        await api
+        await api 
           .post('/api/users')
           .send(newUser)
           .expect(400) 
