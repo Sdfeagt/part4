@@ -53,11 +53,12 @@ blogsRouter.get('/', async (request, response) => {
       response.status(404).json({error: "Missing Token!"})
     }
 
-    if(decodedToken.id.toString() === request.user.toString()){
+    if(decodedToken.username.toString() === request.user.toString()){
       await Blog.findByIdAndRemove(request.params.id)
       response.status(204).end()
     }
     else{
+      console.log("Bad token");
       response.status(412).json({error: "Invalid token!"})
     }
 
